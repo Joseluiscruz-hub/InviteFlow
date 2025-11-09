@@ -1,0 +1,196 @@
+
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 text-white p-4 sm:p-8">
+  <main class="max-w-7xl mx-auto">
+    
+    <header class="text-center mb-10">
+      <h1 class="text-4xl sm:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
+        Generador de Invitaciones de XV Años
+      </h1>
+      <p class="mt-4 text-lg text-indigo-200 max-w-2xl mx-auto">
+        Crea la invitación de tus sueños. Describe tu visión y deja que la magia de la IA la haga realidad.
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+      
+      <!-- Panel de Controles -->
+      <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 shadow-2xl shadow-black/20 flex flex-col space-y-6">
+        
+        <!-- Paso 1: Descripción -->
+        <div>
+          <h2 class="text-2xl font-bold mb-4 text-pink-300">Paso 1: Describe tu Invitación</h2>
+          <div class="flex flex-col space-y-4">
+            <label for="prompt" class="text-indigo-200">Descripción Detallada:</label>
+            <textarea 
+              id="prompt"
+              rows="10" 
+              class="w-full bg-gray-800/50 border border-gray-600 rounded-lg p-4 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-300 text-white placeholder-gray-400"
+              placeholder="Ej: Un diseño mágico con un castillo, estrellas y el nombre 'Skarlet' en dorado..."
+              [value]="prompt()"
+              (input)="updatePrompt($event)">
+            </textarea>
+            
+            <button 
+              (click)="generateImage()" 
+              [disabled]="isLoading() || !prompt()"
+              class="w-full text-lg font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:shadow-lg hover:shadow-purple-500/50 text-white">
+              @if (isLoading()) {
+                <span>Generando Magia...</span>
+              } @else {
+                <span>✨ Generar Invitación</span>
+              }
+            </button>
+          </div>
+        </div>
+
+        <!-- Paso 2: Personalización -->
+        <div class="pt-6 border-t border-white/10">
+          <h2 class="text-2xl font-bold mb-4 text-cyan-300">Paso 2: Personaliza</h2>
+          <!-- Marcos -->
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-3 text-indigo-200">Elige un Marco</h3>
+            <div class="flex items-center space-x-2 sm:space-x-4">
+              <button (click)="selectFrame(null)" [class]="!selectedFrame() ? 'ring-2 ring-cyan-400' : 'ring-1 ring-gray-600'" class="px-3 py-2 text-sm rounded-lg bg-gray-700/50 hover:bg-gray-600/50 transition-colors">Sin Marco</button>
+              @for (frame of frames; track frame.id) {
+                <button (click)="selectFrame(frame.id)" [title]="frame.name"
+                  [class]="selectedFrame() === frame.id ? 'ring-2 ring-cyan-400' : 'ring-1 ring-gray-600'" 
+                  class="w-10 h-10 rounded-lg flex items-center justify-center transition-all transform hover:scale-110">
+                  <div class="w-8 h-8 rounded-md" [class]="frame.class"></div>
+                </button>
+              }
+            </div>
+          </div>
+          <!-- Música -->
+          <div>
+            <h3 class="text-lg font-semibold mb-3 text-indigo-200">Música de Fondo</h3>
+            <select (change)="selectSong($event)" class="w-full bg-gray-800/50 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 text-white">
+              <option value="">Sin Música</option>
+              @for (song of songs; track song.url) {
+                <option [value]="song.url">{{ song.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- Paso 3: Galería QR -->
+        <div class="pt-6 border-t border-white/10">
+          <h2 class="text-2xl font-bold mb-4 text-green-300">Paso 3: Galería de Fotos QR</h2>
+          <p class="text-indigo-200 mb-4 text-sm">Crea un álbum compartido (Google Photos, etc.), pega el enlace y genera un QR para que tus invitados suban sus fotos.</p>
+          <div class="flex flex-col space-y-3">
+            <input 
+              type="url" 
+              (input)="updateAlbumUrl($event)" 
+              [value]="photoAlbumUrl()"
+              placeholder="https://photos.app.goo.gl/tu-enlace" 
+              class="w-full bg-gray-800/50 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 text-white placeholder-gray-400">
+            <button (click)="generateQrCode()" [disabled]="!photoAlbumUrl()" class="w-full font-bold py-2 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none bg-gradient-to-r from-green-500 to-emerald-600 hover:shadow-lg hover:shadow-green-500/50 text-white">
+              🔗 Generar Código QR
+            </button>
+          </div>
+        </div>
+
+        <!-- Paso 4: RSVP -->
+        <div class="pt-6 border-t border-white/10">
+          <h2 class="text-2xl font-bold mb-4 text-lime-300">Paso 4: Confirmación (RSVP)</h2>
+          <div class="flex items-center justify-between bg-gray-800/50 rounded-lg p-4">
+            <label for="rsvp-toggle" class="text-indigo-200 text-base">Activar RSVP en la invitación</label>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="rsvp-toggle" class="sr-only peer" [checked]="isRsvpEnabled()" (change)="toggleRsvp($event)">
+              <div class="w-11 h-6 bg-gray-600 rounded-full peer peer-focus:ring-4 peer-focus:ring-lime-500/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-lime-500"></div>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Panel de Visualización -->
+      <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 shadow-2xl shadow-black/20 min-h-[400px] flex items-center justify-center">
+        @if (isLoading()) {
+          <div class="flex flex-col items-center justify-center text-center">
+            <svg class="animate-spin h-12 w-12 text-pink-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-lg text-indigo-200">Creando tu invitación mágica...</p>
+            <p class="text-sm text-gray-400">Este proceso puede tardar un momento.</p>
+          </div>
+        } @else if (error()) {
+          <div class="bg-red-900/50 border border-red-500 text-red-300 p-4 rounded-lg text-center">
+            <h3 class="font-bold mb-2">¡Oh no! Algo salió mal</h3>
+            <p>{{ error() }}</p>
+          </div>
+        } @else if (generatedImageUrl(); as imageUrl) {
+          <div class="flex flex-col items-center w-full space-y-6">
+            <div class="relative w-full max-w-sm">
+              <img [src]="imageUrl" alt="Invitación de 15 años generada" class="rounded-lg shadow-lg shadow-purple-500/20 w-full">
+              @if (selectedFrameClass(); as frameClass) {
+                <div class="absolute -inset-1 pointer-events-none rounded-lg" [class]="frameClass"></div>
+              }
+            </div>
+            
+            @if (selectedSong(); as songUrl) {
+                <audio controls [src]="songUrl" class="w-full max-w-sm rounded-lg shadow-lg"></audio>
+            }
+
+            <a 
+              [href]="imageUrl" 
+              download="invitacion-quinceanera.jpg"
+              class="w-full max-w-sm text-center text-lg font-bold py-3 px-8 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 bg-gradient-to-r from-blue-500 to-cyan-500 hover:shadow-lg hover:shadow-cyan-500/50 text-white">
+              ⬇️ Descargar Invitación
+            </a>
+            
+            @if (rsvpStatus()) {
+              <div class="w-full max-w-sm text-center bg-black/20 rounded-lg p-5 border border-white/10">
+                @switch (rsvpStatus()) {
+                  @case ('pending') {
+                    <h3 class="text-xl font-bold text-lime-300 mb-4">¿Nos acompañarás?</h3>
+                    <div class="flex justify-center gap-4">
+                      <button (click)="confirmRsvp()" class="flex-1 font-bold py-2 px-4 rounded-lg bg-green-600 hover:bg-green-500 transition-colors transform hover:scale-105">
+                        ¡Sí, asistiré!
+                      </button>
+                      <button (click)="declineRsvp()" class="flex-1 font-bold py-2 px-4 rounded-lg bg-red-800 hover:bg-red-700 transition-colors transform hover:scale-105">
+                        No podré
+                      </button>
+                    </div>
+                  }
+                  @case ('confirmed') {
+                    <div class="text-center p-4 bg-green-900/50 rounded-lg border border-green-500">
+                      <p class="text-lg font-semibold text-green-300">¡Gracias por confirmar!</p>
+                      <p class="text-green-100">¡Qué alegría! Te esperamos para celebrar juntos.</p>
+                    </div>
+                  }
+                  @case ('declined') {
+                     <div class="text-center p-4 bg-red-900/50 rounded-lg border border-red-600">
+                      <p class="text-lg font-semibold text-red-200">Lamentamos que no puedas venir.</p>
+                      <p class="text-red-100">Gracias por hacérnoslo saber. ¡Te echaremos de menos!</p>
+                    </div>
+                  }
+                }
+              </div>
+            }
+
+             @if (generatedQrCodeUrl(); as qrUrl) {
+              <div class="mt-4 pt-6 border-t border-white/20 text-center w-full max-w-sm">
+                <h3 class="text-xl font-bold text-green-300 mb-2">¡Comparte tus Fotos!</h3>
+                <p class="text-indigo-200 mb-4 text-sm">Pide a tus invitados que escaneen este código para subir sus fotos y videos a la galería del evento.</p>
+                <div class="bg-white p-2 rounded-lg inline-block shadow-lg">
+                   <img [src]="qrUrl" alt="Código QR para galería de fotos" class="w-40 h-40">
+                </div>
+                <p class="text-xs text-gray-400 mt-2 break-all px-4">{{ photoAlbumUrl() }}</p>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="text-center text-indigo-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p class="text-xl">La imagen de tu invitación aparecerá aquí.</p>
+            <p class="text-md text-gray-400">Sigue los pasos de la izquierda para empezar.</p>
+          </div>
+        }
+      </div>
+    </div>
+
+  </main>
+</div>
